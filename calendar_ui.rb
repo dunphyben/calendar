@@ -1,5 +1,6 @@
 require 'active_record'
 require 'pry'
+require 'date'
 
 Dir[File.dirname(__FILE__) + '/lib/*.rb'].each { |file| require file }
 
@@ -31,10 +32,26 @@ def create_event
   description = gets.chomp
   puts "Location: "
   location = gets.chomp
-  puts "Start Time: "
-  start_time = gets.chomp
+  puts "Start Day: "
+  puts "Enter the Year"
+  start_year = gets.chomp.to_i
+  puts "Enter the month"
+  start_month = gets.chomp.to_i
+  puts "Enter the day"
+  start_day = gets.chomp.to_i
+  puts "Enter the hour"
+  start_hour = gets.chomp.to_i
+  start_time = DateTime.new(start_year, start_month, start_day, start_hour, 0, 0)
   puts "End Time: "
-  end_time = gets.chomp
+  puts "Enter the Year"
+  end_year = gets.chomp.to_i
+  puts "Enter the month"
+  end_month = gets.chomp.to_i
+  puts "Enter the day"
+  end_day = gets.chomp.to_i
+  puts "Enter the hour"
+  end_hour = gets.chomp.to_i
+  end_time = DateTime.new(end_year, end_month, end_day, end_hour, 0, 0)
   new_event = Event.create(desc: description, location: location, start_time: start_time, end_time: end_time)
   puts "Your event '#{description}' has been created!\n\n"
 
