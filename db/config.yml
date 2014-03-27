@@ -1,6 +1,6 @@
 development:
   adapter: postgresql
-  database: survey_development
+  database: calender_development
 test:
   adapter: postgresql
-  database: survey_test
+  database: calender_test
