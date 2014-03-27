@@ -13,18 +13,25 @@ end
 
 def main_menu
   choice = nil
-  until choice == 'x'
-    puts "C - Create an event."
+  until choice == 'X'
+    puts "\tC - Create an event.",
+         "\tL - List All Events",
+         "\tX - Exit"
     choice = gets.chomp.upcase
     case choice
     when 'C'
       create_event
+    when 'L'
+      list_events
     when 'X'
     else
       puts "Invalid input"
     end
   end
 end
+
+# Next, let users list out the events in the order in which they will occur. By default, only list events in the future.
+
 
 def create_event
   puts "*"*40, "\n\nCREATE NEW EVENT\n\n", "*"*40
@@ -55,6 +62,20 @@ def create_event
   new_event = Event.create(desc: description, location: location, start_time: start_time, end_time: end_time)
   puts "Your event '#{description}' has been created!\n\n"
 
+end
+
+def list_events
+  puts "LIST OF EVENTS\n\n"
+  time = Time.now
+
+
+  event_list = Event.all.each.sort_by { |event| event.start_time }
+
+  event_list.each do |event|
+    if event.end_time > time
+      puts "Event Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "-"*40
+    end
+  end
 end
 
 welcome
