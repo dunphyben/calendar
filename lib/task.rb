@@ -1,3 +1,3 @@
-class Event < ActiveRecord::Base
+class Task < ActiveRecord::Base
   has_many :notes, as: :notable
 end

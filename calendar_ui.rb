@@ -47,8 +47,44 @@ end
 
 def list_tasks
   Task.all.each_with_index do |task, index|
+    # binding.pry
     puts "#{index+1}.  #{task.desc}", "-"*40
   end
+
+  puts "N - Add a note to one of these tasks",
+       "V - View notes on one of these tasks",
+       "X - Back to main menu"
+  input = gets.chomp.upcase
+  case input
+  when 'V'
+    puts "Which task would you like to view the notes on?"
+    chosen_note = gets.chomp.to_i
+    view_notes(Task.all[chosen_note-1])
+  when 'N'
+    puts 'Which task would you like to add a note to?'
+    chosen_note = gets.chomp.to_i
+    add_note(Task.all[chosen_note-1])
+  when 'X'
+  else
+    puts 'Invalid input'
+  end
+end
+
+def view_notes(notable)
+  # binding.pry
+  if notable.notes.first != nil
+    notable.notes.each do |notable|
+      puts notable.name
+    end
+  else
+    puts "This #{notable.class.to_s.downcase} has no notes."
+  end
+end
+
+def add_note(notable)
+  puts "Enter the note you wish to add"
+  note = gets.chomp
+  Note.create({name: note, notable_id: notable.id, notable_type: notable.class.to_s})
 end
 
 # Next, let users list out the events in the order in which they will occur. By default, only list events in the future.
@@ -142,24 +178,50 @@ def list_todays_events
     selected_events.each_with_index do |event, index|
         puts "\n\n#{index + 1}: Event Name: "  + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
     end
-    puts "N - Next day's events",
+    puts "A - Add a note to an event",
+         "V - View notes for an event",
+         "N - Next day's events",
          "P - Previous day's events",
          "E - Edit an event",
          "D - Delete an event",
          "X - Back to menu"
     choice = gets.chomp.upcase
     case choice
+    when "A"
+      puts "Which event would you like to add a note to?"
+      user_input = gets.chomp.to_i
+      if user_input > 0
+        add_note(selected_events[user_input-1])
+      else
+        puts 'Invalid input'
+      end
+    when "V"
+      puts "Which event would you like to view the notes for?"
+      chosen_event = gets.chomp.to_i
+      system 'clear'
+      puts "NOTES", "#{selected_events[chosen_event-1].desc}", "-"*25
+      view_notes(selected_events[chosen_event-1])
+      puts "Press enter to continue"
+      gets
     when "N"
       system 'clear'
       time = time.to_date.next_day
     when "E"
       puts "Enter the number of the event you want to update"
       update_select = gets.chomp.to_i
-      edit_event(selected_events[update_select-1])
+      if update_select > 0
+        edit_event(selected_events[update_select-1])
+      else
+        puts 'invalid input'
+      end
     when "D"
       puts "Enter the number of the event you wish to delete: "
       user_choice = gets.chomp.to_i
-      selected_events[user_choice-1].destroy
+      if user_choice > 0
+        selected_events[user_choice-1].destroy
+      else
+        puts 'Invalid input'
+      end
     when "P"
       system 'clear'
       time = time.to_date.prev_day
@@ -184,13 +246,28 @@ def list_weeks_events
     selected_events.each_with_index do |event, index|
         puts "\n\n#{index + 1}: Event Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
     end
-    puts "N - Next week's events",
+    puts "A - Add a note to an event",
+         "V - View notes for an event",
+         "N - Next week's events",
          "P - Previous week's events",
          "E - Edit an event",
          "D - Delete an event",
          "X - Back to menu"
     choice = gets.chomp.upcase
     case choice
+
+    when "A"
+      puts "Which event would you like to add a note to?"
+      user_input = gets.chomp.to_i
+      add_note(selected_events[user_input-1])
+    when "V"
+      puts "NOTES", "Which event would you like to view notes for?"
+      chosen_event = gets.chomp.to_i
+      system 'clear'
+      puts "#{selected_events[chosen_event-1].desc}", "-"*25
+      view_notes(selected_events[chosen_event-1])
+      puts "Press enter to continue"
+      gets
     when "N"
       time = time.to_date.next_day.next_day.next_day.next_day.next_day.next_day.next_day
     when "P"
@@ -224,13 +301,28 @@ def list_months_events
       puts "\n\n#{index + 1}: Event Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
     end
 
-    puts "N - Next month's events",
+    puts "A - Add a note to an event",
+         "V - View notes for an event",
+         "N - Next month's events",
          "P - Previous month's events",
          "E - Edit an event",
          "D - Delete an event",
          "X - Back to menu"
     choice = gets.chomp.upcase
     case choice
+    when "A"
+      puts "Which event would you like to add a note to?"
+      user_input = gets.chomp.to_i
+      add_note(selected_events[user_input-1])
+    when "V"
+      puts "Which event would you like to view the notes of?"
+      chosen_event = gets.chomp.to_i
+      system 'clear'
+      puts "NOTES", "#{selected_events[chosen_event-1].desc}", "-"*25
+      view_notes(selected_events[chosen_event-1])
+      puts "Press enter to continue"
+      gets
+
     when "N"
       time = time.to_date.next_month
     when "P"
@@ -257,7 +349,7 @@ def edit_event(event)
        "N - Name",
        "L - Location",
        "S - Start time",
-       "E - End time"
+       "E - End time",
        "X - Go back"
   choice = gets.chomp.upcase
   case choice
