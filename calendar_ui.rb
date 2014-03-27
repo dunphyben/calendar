@@ -16,7 +16,9 @@ def main_menu
   until choice == 'X'
     puts "*"*40, "MAIN MENU", "*"*40
     puts "\tC - Create an event.",
+         "\tT - Create a task",
          "\tE - Existing Events",
+         "\tL - List tasks",
          "\tX - Exit"
     choice = gets.chomp.upcase
     case choice
@@ -25,10 +27,27 @@ def main_menu
       gets
     when 'E'
       existing_events
+    when 'T'
+      create_task
+    when 'L'
+      list_tasks
     when 'X'
     else
       puts "Invalid input"
     end
+  end
+end
+
+def create_task
+  puts "*"*40, "\n\nCREATE NEW TASK\n\n", "*"*40
+  puts "Task Name: "
+  name = gets.chomp
+  Task.create({desc: name})
+end
+
+def list_tasks
+  Task.all.each_with_index do |task, index|
+    puts "#{index+1}.  #{task.desc}", "-"*40
   end
 end
 
@@ -52,13 +71,10 @@ def existing_events
       gets
     when 'T'
       list_todays_events
-      gets
     when 'W'
       list_weeks_events
-      gets
     when 'M'
       list_months_events
-      gets
     when 'X'
     end
   end
@@ -97,6 +113,7 @@ def create_event
 
 end
 
+
 def list_future_events
   puts "\n\n", "^"*25, "LIST OF EVENTS", "-"*35, "\n\n"
   time = Time.now
@@ -115,61 +132,173 @@ end
 def list_todays_events
 
   puts "\n\n", "*"*40, "Today's Events", "_"*30
-  # event_list = Event.all.each.sort_by { |event| event.start_time }
-  counter = 0
+  time = Time.now
   loop do
-    Event.all.order("start_time").each do |event|
-      if event.start_time.mday == Time.now.mday+counter && event.start_time.year == Time.now.year+counter
-        puts "\n\nEvent Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
-      end
+
+    selected_events = Event.all.order("start_time").select{ |event| event.start_time.mday == time.mday && event.start_time.year == time.year && event.start_time.mon == time.mon}
+    if selected_events.first == nil
+      puts "\n\nNo events scheduled for today.\n\n"
+    end
+    selected_events.each_with_index do |event, index|
+        puts "\n\n#{index + 1}: Event Name: "  + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
     end
     puts "N - Next day's events",
          "P - Previous day's events",
+         "E - Edit an event",
+         "D - Delete an event",
          "X - Back to menu"
     choice = gets.chomp.upcase
     case choice
     when "N"
-      counter += 1
+      system 'clear'
+      time = time.to_date.next_day
+    when "E"
+      puts "Enter the number of the event you want to update"
+      update_select = gets.chomp.to_i
+      edit_event(selected_events[update_select-1])
+    when "D"
+      puts "Enter the number of the event you wish to delete: "
+      user_choice = gets.chomp.to_i
+      selected_events[user_choice-1].destroy
     when "P"
-      counter -= 1
+      system 'clear'
+      time = time.to_date.prev_day
     when "X"
       break
     else
       puts "Invalid input"
     end
-
-    puts "Press Enter to continue."
   end
 end
-
-
-
 
 
 def list_weeks_events
   puts "\n\n", "*"*40, "This Week's Events", "_"*30
-  # event_list = Event.all.each.sort_by { |event| event.start_time }
+  time = Time.now
+  loop do
 
-  Event.all.order("start_time").each do |event|
-    if event.start_time.to_date.cweek == Time.now.to_date.cweek && event.start_time.year == Time.now.year
-      puts "\n\nEvent Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
+    selected_events = Event.all.order("start_time").select { |event| event.start_time.to_date.cweek == time.to_date.cweek && event.start_time.year == time.year }
+    if selected_events.first == nil
+      puts "\n\nNo events scheduled this week.\n\n"
+    end
+    selected_events.each_with_index do |event, index|
+        puts "\n\n#{index + 1}: Event Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
+    end
+    puts "N - Next week's events",
+         "P - Previous week's events",
+         "E - Edit an event",
+         "D - Delete an event",
+         "X - Back to menu"
+    choice = gets.chomp.upcase
+    case choice
+    when "N"
+      time = time.to_date.next_day.next_day.next_day.next_day.next_day.next_day.next_day
+    when "P"
+      time = time.to_date.prev_day.prev_day.prev_day.prev_day.prev_day.prev_day.prev_day
+    when "E"
+      puts "Enter the number of the event you want to update"
+      update_select = gets.chomp.to_i
+      edit_event(selected_events[update_select - 1])
+    when "D"
+      puts "Enter the number of the event you wish to delete: "
+      user_choice = gets.chomp.to_i
+      selected_events[user_choice-1].destroy
+    when "X"
+      break
+    else
+      puts "Invalid input"
     end
   end
-  puts "Press Enter to continue."
 end
 
 def list_months_events
   puts "\n\n", "*"*40, "This Month's Events", "_"*30
-  # event_list = Event.all.each.sort_by { |event| event.start_time }
+  time = Time.now
+  loop do
 
-  Event.all.order("start_time").each do |event|
-    if event.start_time.mon == Time.now.mon && event.start_time.year == Time.now.year
-      puts "\n\nEvent Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
+    selected_events = Event.all.order("start_time").select { |event| event.start_time.mon == time.mon && event.start_time.year == time.year }
+    if selected_events.first == nil
+      puts "\n\nNo events scheduled this month.\n\n"
     end
+    selected_events.each_with_index do |event, index|
+      puts "\n\n#{index + 1}: Event Name: " + event.desc, "Location: " + event.location, "Start Time: " + event.start_time.to_s, "End Time: " + event.end_time.to_s, "\n\n", "-"*40
+    end
+
+    puts "N - Next month's events",
+         "P - Previous month's events",
+         "E - Edit an event",
+         "D - Delete an event",
+         "X - Back to menu"
+    choice = gets.chomp.upcase
+    case choice
+    when "N"
+      time = time.to_date.next_month
+    when "P"
+      time = time.to_date.prev_month
+    when "E"
+      puts "Enter the number of the event you wish to update: "
+      user_choice = gets.chomp.to_i
+      edit_event(selected_events[user_choice-1])
+    when "D"
+      puts "Enter the number of the event you wish to delete: "
+      user_choice = gets.chomp.to_i
+      selected_events[user_choice-1].destroy
+    when "X"
+      break
+    else
+      puts "Invalid input"
+    end
+    puts "Press Enter to continue."
   end
-  puts "Press Enter to continue."
 end
-# Now, create a view that lets users choose to only view events on the current day, week, or month.
+
+def edit_event(event)
+  puts "What would you like to update?",
+       "N - Name",
+       "L - Location",
+       "S - Start time",
+       "E - End time"
+       "X - Go back"
+  choice = gets.chomp.upcase
+  case choice
+  when 'N'
+    puts "Please enter a new name"
+    name = gets.chomp
+    event.update({ desc: name})
+  when 'L'
+    puts "Please enter a new location"
+    location = gets.chomp
+    event.update({ location: location})
+  when 'S'
+    puts "Start Day: "
+    puts "Enter the Year"
+    start_year = gets.chomp.to_i
+    puts "Enter the month"
+    start_month = gets.chomp.to_i
+    puts "Enter the day"
+    start_day = gets.chomp.to_i
+    puts "Enter the hour"
+    start_hour = gets.chomp.to_i
+    start_time = DateTime.new(start_year, start_month, start_day, start_hour, 0, 0)
+    event.update({ start_time: start_time})
+  when 'E'
+    puts "End Time: "
+    puts "Enter the Year"
+    end_year = gets.chomp.to_i
+    puts "Enter the month"
+    end_month = gets.chomp.to_i
+    puts "Enter the day"
+    end_day = gets.chomp.to_i
+    puts "Enter the hour"
+    end_hour = gets.chomp.to_i
+    end_time = DateTime.new(end_year, end_month, end_day, end_hour, 0, 0)
+    event.update({ end_time: end_time})
+  when 'X'
+  else
+    puts "Invalid option. Please try again."
+    edit_event(event)
+  end
+end
 
 
 
